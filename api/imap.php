@@ -41,7 +41,7 @@ $mailbox = $serverPath . $folder;
 $imap = @imap_open($mailbox, $user, $password);
 
 if (!$imap) {
-    echo json_encode(['success' => false, 'error' => 'IMAP connection failed: ' . imap_last_error()]);
+    echo json_encode(['success' => false, 'error' => imap_last_error(), 'host' => $host, 'user' => $user, 'password_len' => count($password)]);
     exit;
 }
 
