@@ -1,5 +1,5 @@
-const PROD_IMAP = 'http://xs679698.xsrv.jp/webmail/api/imap.php';
-const PROD_SMTP = 'http://xs679698.xsrv.jp/webmail/api/smtp.php';
+const PROD_IMAP = 'https://xs679698.xsrv.jp/webmail/api/imap.php';
+const PROD_SMTP = 'https://xs679698.xsrv.jp/webmail/api/smtp.php';
 const DEV_IMAP = '/api/imap.php';
 const DEV_SMTP = '/api/smtp.php';
 
