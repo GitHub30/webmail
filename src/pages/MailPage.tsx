@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
 import MailList from '../components/MailList';
 import MailDetail from '../components/MailDetail';
@@ -28,6 +28,8 @@ export default function MailPage() {
   const [selectedUids, setSelectedUids] = useState<Set<number>>(new Set());
   const [folders, setFolders] = useState<FolderInfo[]>([]);
   const [currentFolder, setCurrentFolder] = useState('INBOX');
+  const prevEmailUids = useRef<Set<number>>(new Set());
+  const isFirstLoad = useRef(true);
 
   useEffect(() => {
     if (!user || !password) {
@@ -56,7 +58,20 @@ export default function MailPage() {
         res = await fetchMails(user, password, imapHost, page, perPage, currentFolder);
       }
       if (res.success && res.data) {
-        setEmails(res.data.emails);
+        const newEmails = res.data.emails;
+        // Detect new emails for notification
+        if (!isFirstLoad.current && currentFolder === 'INBOX' && !activeSearch) {
+          const currentUids = new Set(newEmails.map(e => e.uid));
+          const newArrivals = newEmails.filter(e => !prevEmailUids.current.has(e.uid));
+          if (newArrivals.length > 0) {
+            notifyNewEmails(newArrivals);
+          }
+          prevEmailUids.current = currentUids;
+        } else {
+          prevEmailUids.current = new Set(newEmails.map(e => e.uid));
+          isFirstLoad.current = false;
+        }
+        setEmails(newEmails);
         setTotal(res.data.total);
       } else {
         setError(res.error || 'Failed to load emails');
@@ -71,6 +86,38 @@ export default function MailPage() {
   useEffect(() => {
     loadMails();
   }, [loadMails]);
+
+  // Auto-refresh every 30 seconds
+  useEffect(() => {
+    const interval = setInterval(() => {
+      loadMails();
+    }, 30000);
+    return () => clearInterval(interval);
+  }, [loadMails]);
+
+  // Request notification permission on mount
+  useEffect(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
+
+  const notifyNewEmails = (newArrivals: MailOverview[]) => {
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    for (const email of newArrivals.slice(0, 3)) {
+      new Notification(email.from || 'New email', {
+        body: email.subject,
+        icon: '/webmail/favicon.svg',
+        tag: `mail-${email.uid}`,
+      });
+    }
+    if (newArrivals.length > 3) {
+      new Notification(`+${newArrivals.length - 3} more new emails`, {
+        icon: '/webmail/favicon.svg',
+        tag: 'mail-more',
+      });
+    }
+  };
 
   const handleLogout = () => {
     navigate('/');

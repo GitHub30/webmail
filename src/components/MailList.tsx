@@ -8,6 +8,28 @@ interface Props {
   onDelete: (uid: number) => void;
 }
 
+const AVATAR_COLORS = [
+  '#1a73e8', '#ea4335', '#34a853', '#fbbc04', '#ff6d01',
+  '#46bdc6', '#7baaf7', '#e07070', '#4db6ac', '#9575cd',
+  '#f06292', '#4fc3f7', '#aed581', '#ff8a65', '#a1887f',
+];
+
+function getAvatarColor(name: string): string {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+  return AVATAR_COLORS[Math.abs(hash) % AVATAR_COLORS.length];
+}
+
+function getInitial(from: string): string {
+  // Extract name from "Name <email>" or just use first char
+  const match = from.match(/^"?([^"<]*)/);
+  const name = match?.[1]?.trim() || from;
+  if (!name) return '?';
+  return name.charAt(0).toUpperCase();
+}
+
 export default function MailList({ emails, selectedUids, onToggleSelect, onSelect, onDelete }: Props) {
   if (emails.length === 0) {
     return <div className="empty-list">No emails found</div>;
@@ -42,6 +64,12 @@ export default function MailList({ emails, selectedUids, onToggleSelect, onSelec
               checked={selectedUids.has(email.uid)}
               onChange={() => onToggleSelect(email.uid)}
             />
+          </div>
+          <div
+            className="mail-avatar"
+            style={{ backgroundColor: getAvatarColor(email.from) }}
+          >
+            {getInitial(email.from)}
           </div>
           <div className="mail-info" onClick={() => onSelect(email.uid)}>
             <span className="mail-from">{email.from || '(unknown)'}</span>
