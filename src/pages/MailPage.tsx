@@ -35,6 +35,7 @@ export default function MailPage() {
   });
   const [focusedIndex, setFocusedIndex] = useState(-1);
   const [showShortcuts, setShowShortcuts] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(true);
   const prevEmailUids = useRef<Set<number>>(new Set());
   const isFirstLoad = useRef(true);
   const searchInputRef = useRef<HTMLInputElement>(null);
@@ -347,7 +348,7 @@ export default function MailPage() {
       {/* Header */}
       <header className="mail-header">
         <div className="header-left">
-          <button className="menu-btn" title="Menu">☰</button>
+          <button className="menu-btn" title="Menu" onClick={() => setSidebarOpen(s => !s)}>☰</button>
           <div className="logo" style={{ cursor: 'pointer' }} onClick={() => handleFolderChange('INBOX')}>
             <svg viewBox="0 0 24 24" fill="#EA4335" width="32" height="32">
               <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
@@ -385,7 +386,7 @@ export default function MailPage() {
 
       <div className="mail-body">
         {/* Sidebar */}
-        <aside className="sidebar">
+        <aside className={`sidebar ${sidebarOpen ? '' : 'collapsed'}`}>
           <button className="compose-btn" onClick={() => setShowCompose(true)}>
             <span className="compose-icon">✏️</span>
             Compose

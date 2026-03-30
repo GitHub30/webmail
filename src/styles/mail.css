@@ -28,9 +28,15 @@
   background: none;
   border: none;
   font-size: 20px;
-  padding: 8px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: background 0.15s;
 }
 
 .menu-btn:hover {
@@ -133,6 +139,14 @@
   padding: 8px 12px;
   overflow-y: auto;
   flex-shrink: 0;
+  transition: width 0.2s, padding 0.2s, opacity 0.2s;
+}
+
+.sidebar.collapsed {
+  width: 0;
+  padding: 0;
+  opacity: 0;
+  overflow: hidden;
 }
 
 .compose-btn {
@@ -676,7 +690,7 @@
 
 .shortcuts-dialog td:first-child {
   font-weight: 600;
-  width: 60px;
+  white-space: nowrap;
 }
 
 .shortcuts-dialog kbd {
