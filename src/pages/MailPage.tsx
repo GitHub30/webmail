@@ -110,6 +110,21 @@ export default function MailPage() {
     return '📁';
   };
 
+  const folderDisplayName = (name: string) => {
+    // Strip "INBOX." prefix for display
+    const stripped = name.replace(/^INBOX\./i, '');
+    // Normalize known folder names
+    const lower = stripped.toLowerCase();
+    if (lower === 'inbox') return 'Inbox';
+    if (lower === 'sent' || lower === 'sent mail' || lower === 'sent items') return 'Sent';
+    if (lower === 'drafts' || lower === 'draft') return 'Drafts';
+    if (lower === 'trash' || lower === 'deleted' || lower === 'deleted items' || lower === 'deleted messages') return 'Trash';
+    if (lower === 'spam' || lower === 'junk' || lower === 'junk e-mail' || lower === 'bulk mail') return 'Spam';
+    if (lower === 'starred' || lower === 'flagged') return 'Starred';
+    if (lower === 'archive' || lower === 'all mail' || lower === 'all') return 'All Mail';
+    return stripped;
+  };
+
   const handleDelete = async (uid: number) => {
     try {
       const res = await deleteMail(user, password, imapHost, uid, currentFolder);
@@ -193,7 +208,7 @@ export default function MailPage() {
                 onClick={e => { e.preventDefault(); handleFolderChange(f.name); }}
               >
                 <span className="nav-icon">{folderIcon(f.name)}</span>
-                <span className="nav-label">{f.name}</span>
+                <span className="nav-label">{folderDisplayName(f.name)}</span>
                 {f.unseen > 0 && <span className="nav-count">{f.unseen}</span>}
               </a>
             )) : (
