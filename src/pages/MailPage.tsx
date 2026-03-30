@@ -39,7 +39,7 @@ export default function MailPage() {
     if (!user || !password) return;
     fetchFolders(user, password, imapHost).then(res => {
       if (res.success && res.data) {
-        setFolders(res.data.folders);
+        setFolders(sortFolders(res.data.folders));
       }
     });
   }, [user, password, imapHost]);
@@ -97,6 +97,21 @@ export default function MailPage() {
     setActiveSearch('');
     setSearchQuery('');
   };
+
+  const folderSortOrder = (name: string): number => {
+    const lower = name.replace(/^INBOX\./i, '').toLowerCase();
+    if (lower === 'inbox') return 0;
+    if (lower === 'starred' || lower === 'flagged') return 1;
+    if (lower === 'sent' || lower === 'sent mail' || lower === 'sent items') return 2;
+    if (lower === 'drafts' || lower === 'draft') return 3;
+    if (lower === 'all mail' || lower === 'all' || lower === 'archive') return 4;
+    if (lower === 'spam' || lower === 'junk' || lower === 'junk e-mail' || lower === 'bulk mail') return 5;
+    if (lower === 'trash' || lower === 'deleted' || lower === 'deleted items' || lower === 'deleted messages' || lower === 'bin') return 6;
+    return 3.5; // custom folders between Drafts and All Mail
+  };
+
+  const sortFolders = (list: FolderInfo[]) =>
+    [...list].sort((a, b) => folderSortOrder(a.name) - folderSortOrder(b.name));
 
   const folderIcon = (name: string) => {
     const lower = name.toLowerCase();
