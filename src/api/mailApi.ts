@@ -43,19 +43,39 @@ export interface ApiResponse<T> {
   error?: string;
 }
 
-function buildImapParams(user: string, password: string, imapHost: string): URLSearchParams {
+export interface FolderInfo {
+  name: string;
+  messages: number;
+  unseen: number;
+}
+
+export interface FoldersResponse {
+  folders: FolderInfo[];
+}
+
+function buildImapParams(user: string, password: string, imapHost: string, folder?: string): URLSearchParams {
   const params = new URLSearchParams();
   params.set('user', user);
   params.set('password', password);
   if (imapHost) params.set('host', imapHost);
+  if (folder) params.set('folder', folder);
   return params;
+}
+
+export async function fetchFolders(
+  user: string, password: string, imapHost: string
+): Promise<ApiResponse<FoldersResponse>> {
+  const params = buildImapParams(user, password, imapHost);
+  params.set('action', 'folders');
+  const res = await fetch(`${imapUrl}?${params}`);
+  return res.json();
 }
 
 export async function fetchMails(
   user: string, password: string, imapHost: string,
-  page = 1, perPage = 20
+  page = 1, perPage = 20, folder = 'INBOX'
 ): Promise<ApiResponse<MailListResponse>> {
-  const params = buildImapParams(user, password, imapHost);
+  const params = buildImapParams(user, password, imapHost, folder);
   params.set('action', 'list');
   params.set('page', String(page));
   params.set('per_page', String(perPage));
@@ -64,9 +84,9 @@ export async function fetchMails(
 }
 
 export async function fetchMail(
-  user: string, password: string, imapHost: string, uid: number
+  user: string, password: string, imapHost: string, uid: number, folder = 'INBOX'
 ): Promise<ApiResponse<MailDetail>> {
-  const params = buildImapParams(user, password, imapHost);
+  const params = buildImapParams(user, password, imapHost, folder);
   params.set('action', 'read');
   params.set('uid', String(uid));
   const res = await fetch(`${imapUrl}?${params}`);
@@ -74,9 +94,9 @@ export async function fetchMail(
 }
 
 export async function deleteMail(
-  user: string, password: string, imapHost: string, uid: number
+  user: string, password: string, imapHost: string, uid: number, folder = 'INBOX'
 ): Promise<ApiResponse<{ deleted: number }>> {
-  const params = buildImapParams(user, password, imapHost);
+  const params = buildImapParams(user, password, imapHost, folder);
   params.set('action', 'delete');
   params.set('uid', String(uid));
   const res = await fetch(`${imapUrl}?${params}`);
@@ -85,9 +105,9 @@ export async function deleteMail(
 
 export async function searchMails(
   user: string, password: string, imapHost: string,
-  query: string, page = 1, perPage = 20
+  query: string, page = 1, perPage = 20, folder = 'INBOX'
 ): Promise<ApiResponse<MailListResponse>> {
-  const params = buildImapParams(user, password, imapHost);
+  const params = buildImapParams(user, password, imapHost, folder);
   params.set('action', 'search');
   params.set('query', query);
   params.set('page', String(page));

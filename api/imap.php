@@ -34,7 +34,9 @@ if (empty($host)) {
     }
 }
 
-$mailbox = '{' . $host . ':993/imap/ssl}INBOX';
+$folder = $_GET['folder'] ?? 'INBOX';
+$serverPath = '{' . $host . ':993/imap/ssl}';
+$mailbox = $serverPath . $folder;
 
 $imap = @imap_open($mailbox, $user, $password);
 
@@ -45,6 +47,24 @@ if (!$imap) {
 
 try {
     switch ($action) {
+        case 'folders':
+            $folders = imap_list($imap, $serverPath, '*');
+            $result = [];
+            if ($folders) {
+                foreach ($folders as $f) {
+                    $name = str_replace($serverPath, '', $f);
+                    $status = @imap_status($imap, $f, SA_MESSAGES | SA_UNSEEN);
+                    $result[] = [
+                        'name' => $name,
+                        'messages' => $status ? $status->messages : 0,
+                        'unseen' => $status ? $status->unseen : 0,
+                    ];
+                }
+            }
+            echo json_encode(['success' => true, 'data' => ['folders' => $result]]);
+            break;
+
+
         case 'list':
             $page = max(1, intval($_GET['page'] ?? 1));
             $perPage = max(1, min(100, intval($_GET['per_page'] ?? 20)));

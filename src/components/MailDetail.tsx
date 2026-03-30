@@ -6,11 +6,12 @@ interface Props {
   password: string;
   imapHost: string;
   uid: number;
+  folder: string;
   onBack: () => void;
   onDelete: () => void;
 }
 
-export default function MailDetail({ user, password, imapHost, uid, onBack, onDelete }: Props) {
+export default function MailDetail({ user, password, imapHost, uid, folder, onBack, onDelete }: Props) {
   const [mail, setMail] = useState<MailDetailType | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
@@ -20,7 +21,7 @@ export default function MailDetail({ user, password, imapHost, uid, onBack, onDe
     (async () => {
       setLoading(true);
       try {
-        const res = await fetchMail(user, password, imapHost, uid);
+        const res = await fetchMail(user, password, imapHost, uid, folder);
         if (cancelled) return;
         if (res.success && res.data) {
           setMail(res.data);
@@ -34,7 +35,7 @@ export default function MailDetail({ user, password, imapHost, uid, onBack, onDe
       }
     })();
     return () => { cancelled = true; };
-  }, [user, password, imapHost, uid]);
+  }, [user, password, imapHost, uid, folder]);
 
   if (loading) return <div className="loading">Loading...</div>;
   if (error) return <div className="error-bar">{error}</div>;

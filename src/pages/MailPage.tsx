@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import MailList from '../components/MailList';
 import MailDetail from '../components/MailDetail';
 import ComposeModal from '../components/ComposeModal';
-import { fetchMails, searchMails, deleteMail, type MailOverview, type MailListResponse } from '../api/mailApi';
+import { fetchMails, fetchFolders, searchMails, deleteMail, type MailOverview, type MailListResponse, type FolderInfo } from '../api/mailApi';
 import '../styles/mail.css';
 
 export default function MailPage() {
@@ -26,12 +26,23 @@ export default function MailPage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSearch, setActiveSearch] = useState('');
   const [selectedUids, setSelectedUids] = useState<Set<number>>(new Set());
+  const [folders, setFolders] = useState<FolderInfo[]>([]);
+  const [currentFolder, setCurrentFolder] = useState('INBOX');
 
   useEffect(() => {
     if (!user || !password) {
       navigate('/');
     }
   }, [user, password, navigate]);
+
+  useEffect(() => {
+    if (!user || !password) return;
+    fetchFolders(user, password, imapHost).then(res => {
+      if (res.success && res.data) {
+        setFolders(res.data.folders);
+      }
+    });
+  }, [user, password, imapHost]);
 
   const loadMails = useCallback(async () => {
     if (!user || !password) return;
@@ -40,9 +51,9 @@ export default function MailPage() {
     try {
       let res: { success: boolean; data?: MailListResponse; error?: string };
       if (activeSearch) {
-        res = await searchMails(user, password, imapHost, activeSearch, page, perPage);
+        res = await searchMails(user, password, imapHost, activeSearch, page, perPage, currentFolder);
       } else {
-        res = await fetchMails(user, password, imapHost, page, perPage);
+        res = await fetchMails(user, password, imapHost, page, perPage, currentFolder);
       }
       if (res.success && res.data) {
         setEmails(res.data.emails);
@@ -55,7 +66,7 @@ export default function MailPage() {
     } finally {
       setLoading(false);
     }
-  }, [user, password, imapHost, page, perPage, activeSearch]);
+  }, [user, password, imapHost, page, perPage, activeSearch, currentFolder]);
 
   useEffect(() => {
     loadMails();
@@ -78,9 +89,30 @@ export default function MailPage() {
     setPage(1);
   };
 
+  const handleFolderChange = (folder: string) => {
+    setCurrentFolder(folder);
+    setPage(1);
+    setSelectedUid(null);
+    setSelectedUids(new Set());
+    setActiveSearch('');
+    setSearchQuery('');
+  };
+
+  const folderIcon = (name: string) => {
+    const lower = name.toLowerCase();
+    if (lower === 'inbox') return '📥';
+    if (lower.includes('sent')) return '📤';
+    if (lower.includes('draft')) return '📝';
+    if (lower.includes('spam') || lower.includes('junk')) return '⚠️';
+    if (lower.includes('trash') || lower.includes('bin')) return '🗑️';
+    if (lower.includes('starred') || lower.includes('flagged')) return '⭐';
+    if (lower.includes('archive') || lower.includes('all')) return '📦';
+    return '📁';
+  };
+
   const handleDelete = async (uid: number) => {
     try {
-      const res = await deleteMail(user, password, imapHost, uid);
+      const res = await deleteMail(user, password, imapHost, uid, currentFolder);
       if (res.success) {
         if (selectedUid === uid) setSelectedUid(null);
         loadMails();
@@ -94,7 +126,7 @@ export default function MailPage() {
 
   const handleBulkDelete = async () => {
     for (const uid of selectedUids) {
-      await deleteMail(user, password, imapHost, uid);
+      await deleteMail(user, password, imapHost, uid, currentFolder);
     }
     setSelectedUids(new Set());
     setSelectedUid(null);
@@ -153,15 +185,28 @@ export default function MailPage() {
             Compose
           </button>
           <nav className="sidebar-nav">
-            <a
-              className={`nav-item active`}
-              href="#"
-              onClick={e => { e.preventDefault(); handleClearSearch(); setSelectedUid(null); }}
-            >
-              <span className="nav-icon">📥</span>
-              <span className="nav-label">Inbox</span>
-              {total > 0 && <span className="nav-count">{total}</span>}
-            </a>
+            {folders.length > 0 ? folders.map(f => (
+              <a
+                key={f.name}
+                className={`nav-item ${currentFolder === f.name ? 'active' : ''}`}
+                href="#"
+                onClick={e => { e.preventDefault(); handleFolderChange(f.name); }}
+              >
+                <span className="nav-icon">{folderIcon(f.name)}</span>
+                <span className="nav-label">{f.name}</span>
+                {f.unseen > 0 && <span className="nav-count">{f.unseen}</span>}
+              </a>
+            )) : (
+              <a
+                className="nav-item active"
+                href="#"
+                onClick={e => { e.preventDefault(); handleFolderChange('INBOX'); }}
+              >
+                <span className="nav-icon">📥</span>
+                <span className="nav-label">Inbox</span>
+                {total > 0 && <span className="nav-count">{total}</span>}
+              </a>
+            )}
           </nav>
         </aside>
 
@@ -175,6 +220,7 @@ export default function MailPage() {
               password={password}
               imapHost={imapHost}
               uid={selectedUid}
+              folder={currentFolder}
               onBack={() => setSelectedUid(null)}
               onDelete={() => handleDelete(selectedUid)}
             />
