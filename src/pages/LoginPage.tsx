@@ -8,6 +8,7 @@ export default function LoginPage() {
   const [password, setPassword] = useState('');
   const [imapHost, setImapHost] = useState('');
   const [smtpHost, setSmtpHost] = useState('');
+  const [showAdvanced, setShowAdvanced] = useState(false);
 
   const domain = user.includes('@') ? user.split('@')[1] : '';
 
@@ -56,28 +57,39 @@ export default function LoginPage() {
               required
             />
           </div>
-          <div className="form-group">
-            <label htmlFor="imap_host">IMAP Host</label>
-            <input
-              id="imap_host"
-              type="text"
-              value={imapHost}
-              onChange={e => setImapHost(e.target.value)}
-              placeholder={domain ? `imap.${domain}` : 'imap.example.com'}
-            />
-            <span className="hint">Leave empty to auto-detect</span>
-          </div>
-          <div className="form-group">
-            <label htmlFor="smtp_host">SMTP Host</label>
-            <input
-              id="smtp_host"
-              type="text"
-              value={smtpHost}
-              onChange={e => setSmtpHost(e.target.value)}
-              placeholder={domain ? `smtp.${domain}` : 'smtp.example.com'}
-            />
-            <span className="hint">Leave empty to auto-detect</span>
-          </div>
+          <button
+            type="button"
+            className="advanced-toggle"
+            onClick={() => setShowAdvanced(!showAdvanced)}
+          >
+            {showAdvanced ? '▾' : '▸'} Advanced settings
+          </button>
+          {showAdvanced && (
+            <>
+              <div className="form-group">
+                <label htmlFor="imap_host">IMAP Host</label>
+                <input
+                  id="imap_host"
+                  type="text"
+                  value={imapHost}
+                  onChange={e => setImapHost(e.target.value)}
+                  placeholder={domain ? `imap.${domain}` : 'imap.example.com'}
+                />
+                <span className="hint">Leave empty to auto-detect</span>
+              </div>
+              <div className="form-group">
+                <label htmlFor="smtp_host">SMTP Host</label>
+                <input
+                  id="smtp_host"
+                  type="text"
+                  value={smtpHost}
+                  onChange={e => setSmtpHost(e.target.value)}
+                  placeholder={domain ? `smtp.${domain}` : 'smtp.example.com'}
+                />
+                <span className="hint">Leave empty to auto-detect</span>
+              </div>
+            </>
+          )}
           <button type="submit" className="login-btn">Sign In</button>
         </form>
       </div>

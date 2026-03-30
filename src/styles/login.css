@@ -85,3 +85,17 @@
 .login-btn:hover {
   background: #1557b0;
 }
+
+.advanced-toggle {
+  background: none;
+  border: none;
+  color: #5f6368;
+  font-size: 13px;
+  padding: 4px 0;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.advanced-toggle:hover {
+  color: #1a73e8;
+}

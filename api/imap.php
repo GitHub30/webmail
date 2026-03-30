@@ -89,8 +89,8 @@ try {
                     $ov = $overview[0];
                     $result[] = [
                         'uid' => $uid,
-                        'from' => isset($ov->from) ? imap_utf8($ov->from) : '',
-                        'subject' => isset($ov->subject) ? imap_utf8($ov->subject) : '(no subject)',
+                        'from' => isset($ov->from) ? decodeMimeHeader($ov->from) : '',
+                        'subject' => isset($ov->subject) ? decodeMimeHeader($ov->subject) : '(no subject)',
                         'date' => $ov->date ?? '',
                         'seen' => isset($ov->seen) && $ov->seen,
                         'flagged' => isset($ov->flagged) && $ov->flagged,
@@ -154,7 +154,7 @@ try {
             if (isset($header->from)) {
                 foreach ($header->from as $f) {
                     $fromArr[] = [
-                        'personal' => isset($f->personal) ? imap_utf8($f->personal) : '',
+                        'personal' => isset($f->personal) ? decodeMimeHeader($f->personal) : '',
                         'email' => ($f->mailbox ?? '') . '@' . ($f->host ?? ''),
                     ];
                 }
@@ -163,7 +163,7 @@ try {
             if (isset($header->to)) {
                 foreach ($header->to as $t) {
                     $toArr[] = [
-                        'personal' => isset($t->personal) ? imap_utf8($t->personal) : '',
+                        'personal' => isset($t->personal) ? decodeMimeHeader($t->personal) : '',
                         'email' => ($t->mailbox ?? '') . '@' . ($t->host ?? ''),
                     ];
                 }
@@ -173,7 +173,7 @@ try {
                 'uid' => $uid,
                 'from' => $fromArr,
                 'to' => $toArr,
-                'subject' => isset($header->subject) ? imap_utf8($header->subject) : '(no subject)',
+                'subject' => isset($header->subject) ? decodeMimeHeader($header->subject) : '(no subject)',
                 'date' => $header->date ?? '',
                 'body' => $body,
                 'htmlBody' => $htmlBody,
@@ -231,8 +231,8 @@ try {
                     $ov = $overview[0];
                     $result[] = [
                         'uid' => $uid,
-                        'from' => isset($ov->from) ? imap_utf8($ov->from) : '',
-                        'subject' => isset($ov->subject) ? imap_utf8($ov->subject) : '(no subject)',
+                        'from' => isset($ov->from) ? decodeMimeHeader($ov->from) : '',
+                        'subject' => isset($ov->subject) ? decodeMimeHeader($ov->subject) : '(no subject)',
                         'date' => $ov->date ?? '',
                         'seen' => isset($ov->seen) && $ov->seen,
                         'flagged' => isset($ov->flagged) && $ov->flagged,
@@ -248,6 +248,20 @@ try {
     }
 } finally {
     imap_close($imap);
+}
+
+function decodeMimeHeader(string $text): string {
+    $parts = imap_mime_header_decode($text);
+    $result = '';
+    foreach ($parts as $part) {
+        $charset = $part->charset;
+        $decoded = $part->text;
+        if ($charset !== 'default' && strtolower($charset) !== 'utf-8') {
+            $decoded = mb_convert_encoding($decoded, 'UTF-8', $charset);
+        }
+        $result .= $decoded;
+    }
+    return $result;
 }
 
 function decodeBody(string $body, int $encoding): string {
