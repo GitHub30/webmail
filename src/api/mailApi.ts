@@ -130,3 +130,14 @@ export async function sendMail(
   const res = await fetch(`${smtpUrl}?${params}`);
   return res.json();
 }
+
+export async function toggleFlag(
+  user: string, password: string, imapHost: string,
+  uid: number, flagged: boolean, folder = 'INBOX'
+): Promise<ApiResponse<{ uid: number; flagged: boolean }>> {
+  const params = buildImapParams(user, password, imapHost, folder);
+  params.set('action', flagged ? 'unflag' : 'flag');
+  params.set('uid', String(uid));
+  const res = await fetch(`${imapUrl}?${params}`);
+  return res.json();
+}

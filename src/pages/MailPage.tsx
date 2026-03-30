@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from 'react-router-dom';
 import MailList from '../components/MailList';
 import MailDetail from '../components/MailDetail';
 import ComposeModal from '../components/ComposeModal';
-import { fetchMails, fetchFolders, searchMails, deleteMail, type MailOverview, type MailListResponse, type FolderInfo } from '../api/mailApi';
+import { fetchMails, fetchFolders, searchMails, deleteMail, toggleFlag, type MailOverview, type MailListResponse, type FolderInfo } from '../api/mailApi';
 import '../styles/mail.css';
 
 export default function MailPage() {
@@ -28,8 +28,20 @@ export default function MailPage() {
   const [selectedUids, setSelectedUids] = useState<Set<number>>(new Set());
   const [folders, setFolders] = useState<FolderInfo[]>([]);
   const [currentFolder, setCurrentFolder] = useState('INBOX');
+  const [darkMode, setDarkMode] = useState(() => {
+    const saved = localStorage.getItem('theme');
+    if (saved) return saved === 'dark';
+    return window.matchMedia('(prefers-color-scheme: dark)').matches;
+  });
+  const [focusedIndex, setFocusedIndex] = useState(-1);
+  const [showShortcuts, setShowShortcuts] = useState(false);
   const prevEmailUids = useRef<Set<number>>(new Set());
   const isFirstLoad = useRef(true);
+  const searchInputRef = useRef<HTMLInputElement>(null);
+  const emailsRef = useRef(emails);
+  const totalRef = useRef(total);
+  emailsRef.current = emails;
+  totalRef.current = total;
 
   useEffect(() => {
     if (!user || !password) {
@@ -46,10 +58,12 @@ export default function MailPage() {
     });
   }, [user, password, imapHost]);
 
-  const loadMails = useCallback(async () => {
+  const loadMails = useCallback(async (silent = false) => {
     if (!user || !password) return;
-    setLoading(true);
-    setError('');
+    if (!silent) {
+      setLoading(true);
+      setError('');
+    }
     try {
       let res: { success: boolean; data?: MailListResponse; error?: string };
       if (activeSearch) {
@@ -71,15 +85,23 @@ export default function MailPage() {
           prevEmailUids.current = new Set(newEmails.map(e => e.uid));
           isFirstLoad.current = false;
         }
-        setEmails(newEmails);
-        setTotal(res.data.total);
-      } else {
+        // Only update state if data actually changed
+        const key = (e: MailOverview) => `${e.uid}:${e.seen}:${e.flagged}`;
+        const oldKey = emailsRef.current.map(key).join(',');
+        const newKey = newEmails.map(key).join(',');
+        if (oldKey !== newKey) {
+          setEmails(newEmails);
+        }
+        if (res.data.total !== totalRef.current) {
+          setTotal(res.data.total);
+        }
+      } else if (!silent) {
         setError(res.error || 'Failed to load emails');
       }
     } catch (e) {
-      setError('Network error');
+      if (!silent) setError('Network error');
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   }, [user, password, imapHost, page, perPage, activeSearch, currentFolder]);
 
@@ -90,7 +112,7 @@ export default function MailPage() {
   // Auto-refresh every 30 seconds
   useEffect(() => {
     const interval = setInterval(() => {
-      loadMails();
+      loadMails(true);
     }, 30000);
     return () => clearInterval(interval);
   }, [loadMails]);
@@ -101,6 +123,92 @@ export default function MailPage() {
       Notification.requestPermission();
     }
   }, []);
+
+  // Theme
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', darkMode ? 'dark' : 'light');
+    localStorage.setItem('theme', darkMode ? 'dark' : 'light');
+  }, [darkMode]);
+
+  // Follow system theme changes
+  useEffect(() => {
+    const mq = window.matchMedia('(prefers-color-scheme: dark)');
+    const handler = (e: MediaQueryListEvent) => {
+      localStorage.removeItem('theme');
+      setDarkMode(e.matches);
+    };
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+
+  // Keyboard shortcuts
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      const inInput = target.tagName === 'INPUT' || target.tagName === 'TEXTAREA' || target.isContentEditable;
+
+      if (e.key === 'Escape') {
+        if (showShortcuts) { setShowShortcuts(false); return; }
+        if (showCompose) { setShowCompose(false); return; }
+        if (selectedUid) { setSelectedUid(null); return; }
+        return;
+      }
+
+      if (inInput) return;
+
+      switch (e.key) {
+        case 'j':
+          e.preventDefault();
+          setFocusedIndex(i => Math.min(i + 1, emails.length - 1));
+          break;
+        case 'k':
+          e.preventDefault();
+          setFocusedIndex(i => Math.max(i - 1, 0));
+          break;
+        case 'Enter':
+        case 'o':
+          e.preventDefault();
+          if (focusedIndex >= 0 && focusedIndex < emails.length && !selectedUid) {
+            setSelectedUid(emails[focusedIndex].uid);
+          }
+          break;
+        case 'u':
+          e.preventDefault();
+          if (selectedUid) setSelectedUid(null);
+          break;
+        case 'c':
+          e.preventDefault();
+          setShowCompose(true);
+          break;
+        case 's':
+          e.preventDefault();
+          if (!selectedUid && focusedIndex >= 0 && focusedIndex < emails.length) {
+            const email = emails[focusedIndex];
+            handleToggleStar(email.uid, email.flagged);
+          }
+          break;
+        case 'e':
+        case 'Delete':
+          e.preventDefault();
+          if (selectedUid) {
+            handleDelete(selectedUid);
+          } else if (focusedIndex >= 0 && focusedIndex < emails.length) {
+            handleDelete(emails[focusedIndex].uid);
+          }
+          break;
+        case '/':
+          e.preventDefault();
+          searchInputRef.current?.focus();
+          break;
+        case '?':
+          e.preventDefault();
+          setShowShortcuts(prev => !prev);
+          break;
+      }
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [emails, focusedIndex, selectedUid, showCompose, showShortcuts]);
 
   const notifyNewEmails = (newArrivals: MailOverview[]) => {
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
@@ -201,6 +309,17 @@ export default function MailPage() {
     }
   };
 
+  const handleToggleStar = async (uid: number, currentFlagged: boolean) => {
+    try {
+      const res = await toggleFlag(user, password, imapHost, uid, currentFlagged, currentFolder);
+      if (res.success) {
+        setEmails(prev => prev.map(e => e.uid === uid ? { ...e, flagged: !currentFlagged } : e));
+      }
+    } catch {
+      // silently fail
+    }
+  };
+
   const handleBulkDelete = async () => {
     for (const uid of selectedUids) {
       await deleteMail(user, password, imapHost, uid, currentFolder);
@@ -239,6 +358,7 @@ export default function MailPage() {
         <form className="search-bar" onSubmit={handleSearch}>
           <span className="search-icon">🔍</span>
           <input
+            ref={searchInputRef}
             type="text"
             placeholder="Search mail"
             value={searchQuery}
@@ -249,6 +369,9 @@ export default function MailPage() {
           )}
         </form>
         <div className="header-right">
+          <button className="theme-toggle" onClick={() => setDarkMode(d => !d)} title="Toggle dark mode">
+            {darkMode ? '☀️' : '🌙'}
+          </button>
           <span className="user-email">{user}</span>
           <button className="logout-btn" onClick={handleLogout}>Sign out</button>
         </div>
@@ -311,7 +434,7 @@ export default function MailPage() {
                       🗑️ Delete
                     </button>
                   )}
-                  <button className="toolbar-btn" onClick={loadMails} title="Refresh">
+                  <button className="toolbar-btn" onClick={() => loadMails()} title="Refresh">
                     🔄 Refresh
                   </button>
                 </div>
@@ -345,9 +468,11 @@ export default function MailPage() {
                 <MailList
                   emails={emails}
                   selectedUids={selectedUids}
+                  focusedUid={focusedIndex >= 0 && focusedIndex < emails.length ? emails[focusedIndex].uid : null}
                   onToggleSelect={toggleSelect}
                   onSelect={uid => setSelectedUid(uid)}
                   onDelete={handleDelete}
+                  onToggleStar={handleToggleStar}
                 />
               )}
             </>
@@ -364,6 +489,27 @@ export default function MailPage() {
           onClose={() => setShowCompose(false)}
           onSent={() => { setShowCompose(false); loadMails(); }}
         />
+      )}
+
+      {/* Shortcuts help */}
+      {showShortcuts && (
+        <div className="shortcuts-overlay" onClick={() => setShowShortcuts(false)}>
+          <div className="shortcuts-dialog" onClick={e => e.stopPropagation()}>
+            <h3>Keyboard Shortcuts</h3>
+            <table>
+              <tbody>
+                <tr><td><kbd>j</kbd> / <kbd>k</kbd></td><td>Move down / up</td></tr>
+                <tr><td><kbd>Enter</kbd> / <kbd>o</kbd></td><td>Open email</td></tr>
+                <tr><td><kbd>u</kbd> / <kbd>Esc</kbd></td><td>Back to list</td></tr>
+                <tr><td><kbd>c</kbd></td><td>Compose</td></tr>
+                <tr><td><kbd>s</kbd></td><td>Star / unstar</td></tr>
+                <tr><td><kbd>e</kbd></td><td>Delete</td></tr>
+                <tr><td><kbd>/</kbd></td><td>Search</td></tr>
+                <tr><td><kbd>?</kbd></td><td>Show shortcuts</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       )}
     </div>
   );

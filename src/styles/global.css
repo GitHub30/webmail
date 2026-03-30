@@ -1,3 +1,67 @@
+:root {
+  --bg-primary: #f6f8fc;
+  --bg-surface: #fff;
+  --bg-sidebar: #f6f8fc;
+  --bg-search: #eaf1fb;
+  --bg-hover: #f1f3f4;
+  --bg-active: #d3e3fd;
+  --bg-compose: #c2e7ff;
+  --bg-compose-header: #404040;
+  --bg-row-read: #f6f8fc;
+  --bg-row-selected: #c2dbff;
+  --bg-error: #fce8e6;
+  --bg-input: #fff;
+  --text-primary: #202124;
+  --text-secondary: #5f6368;
+  --text-hint: #80868b;
+  --text-link: #1a73e8;
+  --text-error: #d93025;
+  --text-compose-title: #001d35;
+  --border-color: #e0e0e0;
+  --border-light: #f1f3f4;
+  --border-input: #dadce0;
+  --btn-primary: #1a73e8;
+  --btn-primary-hover: #1557b0;
+  --btn-send: #0b57d0;
+  --btn-send-hover: #0842a0;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.08);
+  --shadow-search: 0 1px 3px rgba(0,0,0,0.2);
+  --shadow-compose: 0 -2px 12px rgba(0,0,0,0.2);
+  --star-color: #f4b400;
+}
+
+[data-theme="dark"] {
+  --bg-primary: #1a1a2e;
+  --bg-surface: #16213e;
+  --bg-sidebar: #0f3460;
+  --bg-search: #1a1a2e;
+  --bg-hover: #1f4068;
+  --bg-active: #1a3a6a;
+  --bg-compose: #1f4068;
+  --bg-compose-header: #0f3460;
+  --bg-row-read: #16213e;
+  --bg-row-selected: #1a3a6a;
+  --bg-error: #3c1414;
+  --bg-input: #1a1a2e;
+  --text-primary: #e0e0e0;
+  --text-secondary: #a0a4a8;
+  --text-hint: #808488;
+  --text-link: #8ab4f8;
+  --text-error: #f28b82;
+  --text-compose-title: #e0e0e0;
+  --border-color: #2a3a5e;
+  --border-light: #1f3050;
+  --border-input: #3a4a6e;
+  --btn-primary: #8ab4f8;
+  --btn-primary-hover: #669df6;
+  --btn-send: #8ab4f8;
+  --btn-send-hover: #669df6;
+  --shadow-card: 0 1px 3px rgba(0,0,0,0.4);
+  --shadow-search: 0 1px 3px rgba(0,0,0,0.5);
+  --shadow-compose: 0 -2px 12px rgba(0,0,0,0.5);
+  --star-color: #f4b400;
+}
+
 *,
 *::before,
 *::after {
@@ -10,8 +74,8 @@ html, body, #root {
   height: 100%;
   font-family: 'Google Sans', Roboto, Arial, sans-serif;
   font-size: 14px;
-  color: #202124;
-  background: #f6f8fc;
+  color: var(--text-primary);
+  background: var(--bg-primary);
 }
 
 a {

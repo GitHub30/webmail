@@ -193,6 +193,26 @@ try {
             echo json_encode(['success' => true, 'data' => ['deleted' => $uid]]);
             break;
 
+        case 'flag':
+            $uid = intval($_GET['uid'] ?? 0);
+            if ($uid === 0) {
+                echo json_encode(['success' => false, 'error' => 'uid is required']);
+                break;
+            }
+            imap_setflag_full($imap, (string)$uid, '\\Flagged', ST_UID);
+            echo json_encode(['success' => true, 'data' => ['uid' => $uid, 'flagged' => true]]);
+            break;
+
+        case 'unflag':
+            $uid = intval($_GET['uid'] ?? 0);
+            if ($uid === 0) {
+                echo json_encode(['success' => false, 'error' => 'uid is required']);
+                break;
+            }
+            imap_clearflag_full($imap, (string)$uid, '\\Flagged', ST_UID);
+            echo json_encode(['success' => true, 'data' => ['uid' => $uid, 'flagged' => false]]);
+            break;
+
         case 'search':
             $query = $_GET['query'] ?? '';
             if (empty($query)) {

@@ -3,9 +3,11 @@ import type { MailOverview } from '../api/mailApi';
 interface Props {
   emails: MailOverview[];
   selectedUids: Set<number>;
+  focusedUid: number | null;
   onToggleSelect: (uid: number) => void;
   onSelect: (uid: number) => void;
   onDelete: (uid: number) => void;
+  onToggleStar: (uid: number, flagged: boolean) => void;
 }
 
 const AVATAR_COLORS = [
@@ -30,7 +32,7 @@ function getInitial(from: string): string {
   return name.charAt(0).toUpperCase();
 }
 
-export default function MailList({ emails, selectedUids, onToggleSelect, onSelect, onDelete }: Props) {
+export default function MailList({ emails, selectedUids, focusedUid, onToggleSelect, onSelect, onDelete, onToggleStar }: Props) {
   if (emails.length === 0) {
     return <div className="empty-list">No emails found</div>;
   }
@@ -56,7 +58,7 @@ export default function MailList({ emails, selectedUids, onToggleSelect, onSelec
       {emails.map(email => (
         <div
           key={email.uid}
-          className={`mail-row ${email.seen ? 'read' : 'unread'} ${selectedUids.has(email.uid) ? 'selected' : ''}`}
+          className={`mail-row ${email.seen ? 'read' : 'unread'} ${selectedUids.has(email.uid) ? 'selected' : ''} ${focusedUid === email.uid ? 'focused' : ''}`}
         >
           <div className="mail-checkbox">
             <input
@@ -65,6 +67,13 @@ export default function MailList({ emails, selectedUids, onToggleSelect, onSelec
               onChange={() => onToggleSelect(email.uid)}
             />
           </div>
+          <button
+            className={`star-btn ${email.flagged ? 'starred' : ''}`}
+            onClick={e => { e.stopPropagation(); onToggleStar(email.uid, email.flagged); }}
+            title={email.flagged ? 'Unstar' : 'Star'}
+          >
+            {email.flagged ? '★' : '☆'}
+          </button>
           <div
             className="mail-avatar"
             style={{ backgroundColor: getAvatarColor(email.from) }}
