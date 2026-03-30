@@ -595,12 +595,16 @@ Theme toggle */
 .theme-toggle {
   background: none;
   border: none;
-  font-size: 20px;
-  padding: 6px;
+  font-size: 18px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   cursor: pointer;
   color: var(--text-secondary);
   transition: background 0.15s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .theme-toggle:hover {
