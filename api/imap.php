@@ -41,7 +41,7 @@ $mailbox = $serverPath . $folder;
 $imap = @imap_open($mailbox, $user, $password);
 
 if (!$imap) {
-    echo json_encode(['success' => false, 'error' => imap_last_error(), 'mailbox' => $mailbox, 'user' => $user, 'password_len' => strlen($password)]);
+    echo json_encode(['success' => false, 'error' => imap_last_error()]);
     exit;
 }
 
