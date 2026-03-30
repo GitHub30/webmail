@@ -178,10 +178,6 @@ export default function MailPage() {
           e.preventDefault();
           if (selectedUid) setSelectedUid(null);
           break;
-        case 'c':
-          e.preventDefault();
-          setShowCompose(true);
-          break;
         case 's':
           e.preventDefault();
           if (!selectedUid && focusedIndex >= 0 && focusedIndex < emails.length) {
@@ -509,7 +505,6 @@ export default function MailPage() {
                 <tr><td><kbd>j</kbd> / <kbd>k</kbd></td><td>{t('Move down / up')}</td></tr>
                 <tr><td><kbd>Enter</kbd> / <kbd>o</kbd></td><td>{t('Open email')}</td></tr>
                 <tr><td><kbd>u</kbd> / <kbd>Esc</kbd></td><td>{t('Back to list')}</td></tr>
-                <tr><td><kbd>c</kbd></td><td>{t('Compose')}</td></tr>
                 <tr><td><kbd>s</kbd></td><td>{t('Star / unstar')}</td></tr>
                 <tr><td><kbd>e</kbd></td><td>{t('Delete')}</td></tr>
                 <tr><td><kbd>/</kbd></td><td>{t('Search')}</td></tr>
