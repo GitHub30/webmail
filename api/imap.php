@@ -21,7 +21,17 @@ if (empty($user) || empty($password)) {
 
 if (empty($host)) {
     $domain = substr($user, strpos($user, '@') + 1);
-    $host = 'imap.' . $domain;
+    if (in_array($domain, ['gmail.com', 'googlemail.com'])) {
+        $host = 'imap.gmail.com';
+    } elseif (in_array($domain, ['yahoo.com', 'yahoo.co.jp'])) {
+        $host = 'imap.mail.yahoo.com';
+    } elseif (in_array($domain, ['outlook.com', 'hotmail.com', 'live.com'])) {
+        $host = 'imap-mail.outlook.com';
+    } elseif (in_array($domain, ['ethereal.email', 'mailtrap.io', 'mailinator.com'])) {
+        $host = 'imap.' . $domain;
+    } else {
+        $host = gethostbyaddr(gethostbyname($domain));
+    }
 }
 
 $mailbox = '{' . $host . ':993/imap/ssl}INBOX';

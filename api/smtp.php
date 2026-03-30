@@ -34,7 +34,17 @@ if (empty($to)) {
 
 if (empty($host)) {
     $domain = substr($user, strpos($user, '@') + 1);
-    $host = 'smtp.' . $domain;
+    if (in_array($domain, ['gmail.com', 'googlemail.com'])) {
+        $host = 'smtp.gmail.com';
+    } elseif (in_array($domain, ['yahoo.com', 'yahoo.co.jp'])) {
+        $host = 'smtp.mail.yahoo.com';
+    } elseif (in_array($domain, ['outlook.com', 'hotmail.com', 'live.com'])) {
+        $host = 'smtp-mail.outlook.com';
+    } elseif (in_array($domain, ['ethereal.email', 'mailtrap.io', 'mailinator.com'])) {
+        $host = 'smtp.' . $domain;
+    } else {
+        $host = gethostbyaddr(gethostbyname($domain));
+    }
 }
 
 try {
