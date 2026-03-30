@@ -1,4 +1,5 @@
 import type { MailOverview } from '../api/mailApi';
+import { t } from '../i18n';
 
 interface Props {
   emails: MailOverview[];
@@ -34,7 +35,7 @@ function getInitial(from: string): string {
 
 export default function MailList({ emails, selectedUids, focusedUid, onToggleSelect, onSelect, onDelete, onToggleStar }: Props) {
   if (emails.length === 0) {
-    return <div className="empty-list">No emails found</div>;
+    return <div className="empty-list">{t('No emails found')}</div>;
   }
 
   const formatDate = (dateStr: string) => {
@@ -70,7 +71,7 @@ export default function MailList({ emails, selectedUids, focusedUid, onToggleSel
           <button
             className={`star-btn ${email.flagged ? 'starred' : ''}`}
             onClick={e => { e.stopPropagation(); onToggleStar(email.uid, email.flagged); }}
-            title={email.flagged ? 'Unstar' : 'Star'}
+            title={email.flagged ? t('Unstar') : t('Star')}
           >
             {email.flagged ? '★' : '☆'}
           </button>
@@ -89,7 +90,7 @@ export default function MailList({ emails, selectedUids, focusedUid, onToggleSel
             <button
               className="action-btn delete"
               onClick={e => { e.stopPropagation(); onDelete(email.uid); }}
-              title="Delete"
+              title={t('Delete')}
             >🗑️</button>
           </div>
         </div>

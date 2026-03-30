@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { sendMail } from '../api/mailApi';
+import { t } from '../i18n';
 
 interface Props {
   user: string;
@@ -26,10 +27,10 @@ export default function ComposeModal({ user, password, smtpHost, onClose, onSent
       if (res.success) {
         onSent();
       } else {
-        setError(res.error || 'Failed to send');
+        setError(res.error || t('Failed to send'));
       }
     } catch {
-      setError('Network error');
+      setError(t('Network error'));
     } finally {
       setSending(false);
     }
@@ -39,27 +40,27 @@ export default function ComposeModal({ user, password, smtpHost, onClose, onSent
     <div className="compose-modal">
       <div className="compose-window">
         <div className="compose-header">
-          <span>New Message</span>
+          <span>{t('New Message')}</span>
           <button className="close-btn" onClick={onClose}>✕</button>
         </div>
         <form onSubmit={handleSend}>
           <div className="compose-field">
-            <label>To</label>
+            <label>{t('To')}</label>
             <input
               type="text"
               value={to}
               onChange={e => setTo(e.target.value)}
-              placeholder="Recipients"
+              placeholder={t('Recipients')}
               required
             />
           </div>
           <div className="compose-field">
-            <label>Subject</label>
+            <label>{t('Subject')}</label>
             <input
               type="text"
               value={subject}
               onChange={e => setSubject(e.target.value)}
-              placeholder="Subject"
+              placeholder={t('Subject')}
             />
           </div>
           {error && <div className="compose-error">{error}</div>}
@@ -67,11 +68,11 @@ export default function ComposeModal({ user, password, smtpHost, onClose, onSent
             className="compose-body"
             value={body}
             onChange={e => setBody(e.target.value)}
-            placeholder="Write your message..."
+            placeholder={t('Write your message...')}
           />
           <div className="compose-footer">
             <button type="submit" className="send-btn" disabled={sending}>
-              {sending ? 'Sending...' : 'Send'}
+              {sending ? t('Sending...') : t('Send')}
             </button>
           </div>
         </form>

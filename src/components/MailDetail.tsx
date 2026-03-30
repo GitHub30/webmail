@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { fetchMail, type MailDetail as MailDetailType } from '../api/mailApi';
+import { t } from '../i18n';
 
 interface Props {
   user: string;
@@ -37,7 +38,7 @@ export default function MailDetail({ user, password, imapHost, uid, folder, onBa
     return () => { cancelled = true; };
   }, [user, password, imapHost, uid, folder]);
 
-  if (loading) return <div className="loading">Loading...</div>;
+  if (loading) return <div className="loading">{t('Loading...')}</div>;
   if (error) return <div className="error-bar">{error}</div>;
   if (!mail) return null;
 
@@ -47,20 +48,20 @@ export default function MailDetail({ user, password, imapHost, uid, folder, onBa
   return (
     <div className="mail-detail">
       <div className="detail-toolbar">
-        <button className="toolbar-btn" onClick={onBack}>← Back</button>
-        <button className="toolbar-btn delete-btn" onClick={onDelete}>🗑️ Delete</button>
+        <button className="toolbar-btn" onClick={onBack}>{t('← Back')}</button>
+        <button className="toolbar-btn delete-btn" onClick={onDelete}>🗑️ {t('Delete')}</button>
       </div>
       <div className="detail-header">
         <h2 className="detail-subject">{mail.subject}</h2>
         <div className="detail-meta">
           <div className="detail-from">
-            <strong>From:</strong> {mail.from.map(formatAddress).join(', ')}
+            <strong>{t('From:')}</strong> {mail.from.map(formatAddress).join(', ')}
           </div>
           <div className="detail-to">
-            <strong>To:</strong> {mail.to.map(formatAddress).join(', ')}
+            <strong>{t('To:')}</strong> {mail.to.map(formatAddress).join(', ')}
           </div>
           <div className="detail-date">
-            <strong>Date:</strong> {new Date(mail.date).toLocaleString()}
+            <strong>{t('Date:')}</strong> {new Date(mail.date).toLocaleString()}
           </div>
         </div>
       </div>
@@ -68,7 +69,7 @@ export default function MailDetail({ user, password, imapHost, uid, folder, onBa
         {mail.htmlBody ? (
           <iframe
             srcDoc={mail.htmlBody}
-            title="Email content"
+            title={t('Email content')}
             className="html-frame"
             sandbox="allow-same-origin"
           />

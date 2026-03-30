@@ -4,6 +4,7 @@ import MailList from '../components/MailList';
 import MailDetail from '../components/MailDetail';
 import ComposeModal from '../components/ComposeModal';
 import { fetchMails, fetchFolders, searchMails, deleteMail, toggleFlag, type MailOverview, type MailListResponse, type FolderInfo } from '../api/mailApi';
+import { t } from '../i18n';
 import '../styles/mail.css';
 
 export default function MailPage() {
@@ -97,10 +98,10 @@ export default function MailPage() {
           setTotal(res.data.total);
         }
       } else if (!silent) {
-        setError(res.error || 'Failed to load emails');
+        setError(res.error || t('Failed to load emails'));
       }
     } catch (e) {
-      if (!silent) setError('Network error');
+      if (!silent) setError(t('Network error'));
     } finally {
       if (!silent) setLoading(false);
     }
@@ -286,13 +287,13 @@ export default function MailPage() {
     const stripped = name.replace(/^INBOX\./i, '');
     // Normalize known folder names
     const lower = stripped.toLowerCase();
-    if (lower === 'inbox') return 'Inbox';
-    if (lower === 'sent' || lower === 'sent mail' || lower === 'sent items') return 'Sent';
-    if (lower === 'drafts' || lower === 'draft') return 'Drafts';
-    if (lower === 'trash' || lower === 'deleted' || lower === 'deleted items' || lower === 'deleted messages') return 'Trash';
-    if (lower === 'spam' || lower === 'junk' || lower === 'junk e-mail' || lower === 'bulk mail') return 'Spam';
-    if (lower === 'starred' || lower === 'flagged') return 'Starred';
-    if (lower === 'archive' || lower === 'all mail' || lower === 'all') return 'All Mail';
+    if (lower === 'inbox') return t('Inbox');
+    if (lower === 'sent' || lower === 'sent mail' || lower === 'sent items') return t('Sent');
+    if (lower === 'drafts' || lower === 'draft') return t('Drafts');
+    if (lower === 'trash' || lower === 'deleted' || lower === 'deleted items' || lower === 'deleted messages') return t('Trash');
+    if (lower === 'spam' || lower === 'junk' || lower === 'junk e-mail' || lower === 'bulk mail') return t('Spam');
+    if (lower === 'starred' || lower === 'flagged') return t('Starred');
+    if (lower === 'archive' || lower === 'all mail' || lower === 'all') return t('All Mail');
     return stripped;
   };
 
@@ -303,10 +304,10 @@ export default function MailPage() {
         if (selectedUid === uid) setSelectedUid(null);
         loadMails();
       } else {
-        setError(res.error || 'Failed to delete');
+        setError(res.error || t('Failed to delete'));
       }
     } catch {
-      setError('Network error');
+      setError(t('Network error'));
     }
   };
 
@@ -348,7 +349,7 @@ export default function MailPage() {
       {/* Header */}
       <header className="mail-header">
         <div className="header-left">
-          <button className="menu-btn" title="Menu" onClick={() => setSidebarOpen(s => !s)}>☰</button>
+          <button className="menu-btn" title={t('Menu')} onClick={() => setSidebarOpen(s => !s)}>☰</button>
           <div className="logo" style={{ cursor: 'pointer' }} onClick={() => handleFolderChange('INBOX')}>
             <svg viewBox="0 0 24 24" fill="#EA4335" width="32" height="32">
               <path d="M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zm0 4l-8 5-8-5V6l8 5 8-5v2z"/>
@@ -361,7 +362,7 @@ export default function MailPage() {
           <input
             ref={searchInputRef}
             type="text"
-            placeholder="Search mail"
+            placeholder={t('Search mail')}
             value={searchQuery}
             onChange={e => setSearchQuery(e.target.value)}
           />
@@ -370,17 +371,17 @@ export default function MailPage() {
           )}
         </form>
         <div className="header-right">
-          <button className="theme-toggle" onClick={() => setShowShortcuts(true)} title="Keyboard shortcuts">
+          <button className="theme-toggle" onClick={() => setShowShortcuts(true)} title={t('Keyboard shortcuts')}>
             <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M11 18h2v-2h-2v2zm1-16C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zm0-14c-2.21 0-4 1.79-4 4h2c0-1.1.9-2 2-2s2 .9 2 2c0 2-3 1.75-3 5h2c0-2.25 3-2.5 3-5 0-2.21-1.79-4-4-4z"/></svg>
           </button>
-          <button className="theme-toggle" onClick={() => setDarkMode(d => !d)} title="Toggle dark mode">
+          <button className="theme-toggle" onClick={() => setDarkMode(d => !d)} title={t('Toggle dark mode')}>
             {darkMode
               ? <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M6.76 4.84l-1.8-1.79-1.41 1.41 1.79 1.79 1.42-1.41zM4 10.5H1v2h3v-2zm9-9.95h-2V3.5h2V.55zm7.45 3.91l-1.41-1.41-1.79 1.79 1.41 1.41 1.79-1.79zm-3.21 13.7l1.79 1.8 1.41-1.41-1.8-1.79-1.4 1.4zM20 10.5v2h3v-2h-3zm-8-5c-3.31 0-6 2.69-6 6s2.69 6 6 6 6-2.69 6-6-2.69-6-6-6zm-1 16.95h2V19.5h-2v2.95zm-7.45-3.91l1.41 1.41 1.79-1.8-1.41-1.41-1.79 1.8z"/></svg>
               : <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor"><path d="M9.37 5.51c-.18.64-.27 1.31-.27 1.99 0 4.08 3.32 7.4 7.4 7.4.68 0 1.35-.09 1.99-.27C17.45 17.19 14.93 19 12 19c-3.86 0-7-3.14-7-7 0-2.93 1.81-5.45 4.37-6.49zM12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9c0-.46-.04-.92-.1-1.36-.98 1.37-2.58 2.26-4.4 2.26-2.98 0-5.4-2.42-5.4-5.4 0-1.81.89-3.42 2.26-4.4-.44-.06-.9-.1-1.36-.1z"/></svg>
             }
           </button>
           <span className="user-email">{user}</span>
-          <button className="logout-btn" onClick={handleLogout}>Sign out</button>
+          <button className="logout-btn" onClick={handleLogout}>{t('Sign out')}</button>
         </div>
       </header>
 
@@ -389,7 +390,7 @@ export default function MailPage() {
         <aside className={`sidebar ${sidebarOpen ? '' : 'collapsed'}`}>
           <button className="compose-btn" onClick={() => setShowCompose(true)}>
             <span className="compose-icon">✏️</span>
-            Compose
+            {t('Compose')}
           </button>
           <nav className="sidebar-nav">
             {folders.length > 0 ? folders.map(f => (
@@ -438,22 +439,22 @@ export default function MailPage() {
                 <div className="toolbar-left">
                   {selectedUids.size > 0 && (
                     <button className="toolbar-btn delete-btn" onClick={handleBulkDelete} title="Delete selected">
-                      🗑️ Delete
+                      🗑️ {t('Delete')}
                     </button>
                   )}
-                  <button className="toolbar-btn" onClick={() => loadMails()} title="Refresh">
-                    🔄 Refresh
+                  <button className="toolbar-btn" onClick={() => loadMails()} title={t('Refresh')}>
+                    🔄 {t('Refresh')}
                   </button>
                 </div>
                 <div className="toolbar-right">
                   {activeSearch && (
                     <span className="search-info">
                       Results for "{activeSearch}"
-                      <button className="clear-link" onClick={handleClearSearch}>Clear</button>
+                      <button className="clear-link" onClick={handleClearSearch}>{t('Clear')}</button>
                     </span>
                   )}
                   <span className="page-info">
-                    {total === 0 ? 'No emails' : `${(page - 1) * perPage + 1}-${Math.min(page * perPage, total)} of ${total}`}
+                    {total === 0 ? t('No emails') : `${(page - 1) * perPage + 1}-${Math.min(page * perPage, total)} / ${total}`}
                   </span>
                   <button
                     className="toolbar-btn"
@@ -470,7 +471,7 @@ export default function MailPage() {
 
               {/* Email list */}
               {loading ? (
-                <div className="loading">Loading...</div>
+                <div className="loading">{t('Loading...')}</div>
               ) : (
                 <MailList
                   emails={emails}
@@ -502,17 +503,17 @@ export default function MailPage() {
       {showShortcuts && (
         <div className="shortcuts-overlay" onClick={() => setShowShortcuts(false)}>
           <div className="shortcuts-dialog" onClick={e => e.stopPropagation()}>
-            <h3>Keyboard Shortcuts</h3>
+            <h3>{t('Keyboard Shortcuts')}</h3>
             <table>
               <tbody>
-                <tr><td><kbd>j</kbd> / <kbd>k</kbd></td><td>Move down / up</td></tr>
-                <tr><td><kbd>Enter</kbd> / <kbd>o</kbd></td><td>Open email</td></tr>
-                <tr><td><kbd>u</kbd> / <kbd>Esc</kbd></td><td>Back to list</td></tr>
-                <tr><td><kbd>c</kbd></td><td>Compose</td></tr>
-                <tr><td><kbd>s</kbd></td><td>Star / unstar</td></tr>
-                <tr><td><kbd>e</kbd></td><td>Delete</td></tr>
-                <tr><td><kbd>/</kbd></td><td>Search</td></tr>
-                <tr><td><kbd>?</kbd></td><td>Show shortcuts</td></tr>
+                <tr><td><kbd>j</kbd> / <kbd>k</kbd></td><td>{t('Move down / up')}</td></tr>
+                <tr><td><kbd>Enter</kbd> / <kbd>o</kbd></td><td>{t('Open email')}</td></tr>
+                <tr><td><kbd>u</kbd> / <kbd>Esc</kbd></td><td>{t('Back to list')}</td></tr>
+                <tr><td><kbd>c</kbd></td><td>{t('Compose')}</td></tr>
+                <tr><td><kbd>s</kbd></td><td>{t('Star / unstar')}</td></tr>
+                <tr><td><kbd>e</kbd></td><td>{t('Delete')}</td></tr>
+                <tr><td><kbd>/</kbd></td><td>{t('Search')}</td></tr>
+                <tr><td><kbd>?</kbd></td><td>{t('Show shortcuts')}</td></tr>
               </tbody>
             </table>
           </div>
