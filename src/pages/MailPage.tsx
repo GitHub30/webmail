@@ -211,17 +211,20 @@ export default function MailPage() {
     return () => window.removeEventListener('keydown', handler);
   }, [emails, focusedIndex, selectedUid, showCompose, showShortcuts]);
 
-  const notifyNewEmails = (newArrivals: MailOverview[]) => {
+  const notifyNewEmails = async (newArrivals: MailOverview[]) => {
     if (!('Notification' in window) || Notification.permission !== 'granted') return;
+    if (!('serviceWorker' in navigator)) return;
+    const registration = await navigator.serviceWorker.getRegistration();
+    if (!registration) return;
     for (const email of newArrivals.slice(0, 3)) {
-      new Notification(email.from || 'New email', {
+      registration.showNotification(email.from || 'New email', {
         body: email.subject,
         icon: '/webmail/favicon.svg',
         tag: `mail-${email.uid}`,
       });
     }
     if (newArrivals.length > 3) {
-      new Notification(`+${newArrivals.length - 3} more new emails`, {
+      registration.showNotification(`+${newArrivals.length - 3} more new emails`, {
         icon: '/webmail/favicon.svg',
         tag: 'mail-more',
       });
