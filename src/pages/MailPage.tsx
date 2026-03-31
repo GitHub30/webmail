@@ -100,8 +100,8 @@ export default function MailPage() {
       } else if (!silent) {
         setError(res.error || t('Failed to load emails'));
       }
-    } catch (e) {
-      if (!silent) setError(t('Network error'));
+    } catch (e: any) {
+      if (!silent) setError(t('Network error') + e.message);
     } finally {
       if (!silent) setLoading(false);
     }
