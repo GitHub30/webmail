@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import DOMPurify from 'dompurify';
 import { fetchMail, type MailDetail as MailDetailType } from '../api/mailApi';
 import { t } from '../i18n';
 
@@ -67,11 +68,9 @@ export default function MailDetail({ user, password, imapHost, uid, folder, onBa
       </div>
       <div className="detail-body">
         {mail.htmlBody ? (
-          <iframe
-            srcDoc={mail.htmlBody}
-            title={t('Email content')}
-            className="html-frame"
-            sandbox="allow-same-origin"
+          <div
+            className="html-body"
+            dangerouslySetInnerHTML={{ __html: DOMPurify.sanitize(mail.htmlBody) }}
           />
         ) : (
           <pre className="text-body">{mail.body}</pre>
