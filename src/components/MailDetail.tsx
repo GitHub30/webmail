@@ -1,5 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import DOMPurify from 'dompurify';
+// 外部リンクを新しいタブで開く
+DOMPurify.addHook('afterSanitizeAttributes', function(node) {
+  if (node.tagName === 'A') {
+    node.setAttribute('target', '_blank');
+    node.setAttribute('rel', 'noopener noreferrer');
+  }
+});
 import { fetchMail, type MailDetail as MailDetailType } from '../api/mailApi';
 import { t } from '../i18n';
 
