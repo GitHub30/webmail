@@ -75,17 +75,20 @@ export default function MailPage() {
       }
       if (res.success && res.data) {
         const newEmails = res.data.emails;
+        const currentUids = new Set(newEmails.map(e => e.uid));
         // Detect new emails for notification
-        if (!isFirstLoad.current && currentFolder === 'INBOX' && !activeSearch) {
-          const currentUids = new Set(newEmails.map(e => e.uid));
+        if (isFirstLoad.current) {
+          // 初回ロード時は通知せず、UIDセットだけ初期化
+          prevEmailUids.current = currentUids;
+          isFirstLoad.current = false;
+        } else if (currentFolder === 'INBOX' && !activeSearch) {
           const newArrivals = newEmails.filter(e => !prevEmailUids.current.has(e.uid));
           if (newArrivals.length > 0) {
             notifyNewEmails(newArrivals);
           }
           prevEmailUids.current = currentUids;
         } else {
-          prevEmailUids.current = new Set(newEmails.map(e => e.uid));
-          isFirstLoad.current = false;
+          prevEmailUids.current = currentUids;
         }
         // Only update state if data actually changed
         const key = (e: MailOverview) => `${e.uid}:${e.seen}:${e.flagged}`;
