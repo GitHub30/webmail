@@ -60,8 +60,10 @@ export default function MailList({ emails, selectedUids, focusedUid, onToggleSel
         <div
           key={email.uid}
           className={`mail-row ${email.seen ? 'read' : 'unread'} ${selectedUids.has(email.uid) ? 'selected' : ''} ${focusedUid === email.uid ? 'focused' : ''}`}
+          onClick={() => onSelect(email.uid)}
+          style={{ cursor: 'pointer' }}
         >
-          <div className="mail-checkbox">
+          <div className="mail-checkbox" onClick={e => e.stopPropagation()}>
             <input
               type="checkbox"
               checked={selectedUids.has(email.uid)}
@@ -81,7 +83,7 @@ export default function MailList({ emails, selectedUids, focusedUid, onToggleSel
           >
             {getInitial(email.from)}
           </div>
-          <div className="mail-info" onClick={() => onSelect(email.uid)}>
+          <div className="mail-info">
             <span className="mail-from">{email.from || '(unknown)'}</span>
             <span className="mail-subject">{email.subject}</span>
             <span className="mail-date">{formatDate(email.date)}</span>
